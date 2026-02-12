@@ -1,0 +1,1 @@
+DROP INDEX "alias_code_idx";
