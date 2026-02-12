@@ -1,11 +1,31 @@
 import { Hono } from "hono/tiny";
 import { logger } from "hono/logger";
 import db from "./db";
-import { getAllAliases } from "./query";
+import { getAliasesByUserId, getAliasByCode } from "./query";
+import { sValidator } from "@hono/standard-validator";
+import { object, string, date } from "yup";
+import { createAlias, updateAlias, deleteAlias } from "./command";
 
 const app = new Hono();
 
 app.use(logger())
+
+// Validation Schemas
+const createSchema = object({
+    target: string().url().required().max(2048),
+    metadata: object().optional(),
+    expires_at: date().min(new Date()).optional(),
+});
+
+const updateSchema = object({
+    target: string().url().optional().max(2048),
+    metadata: object().optional(),
+    expires_at: date().min(new Date()).optional(),
+});
+
+const userHeaderSchema = object({
+    "x-user-id": string().required() // Relaxed from UUID if needed, but keeping it required
+});
 
 app.get('/health', async (c) => {
     try {
@@ -16,11 +36,91 @@ app.get('/health', async (c) => {
     }
 });
 
-app.get('/', async (c) => {
+// List all aliases for a user
+app.get('/aliases', sValidator("header", userHeaderSchema), async (c) => {
     try {
-        return c.json(await getAllAliases());
+        const user_id = c.req.header("x-user-id")!;
+        const aliases = await getAliasesByUserId(user_id);
+        return c.json(aliases);
     } catch (error) {
         return c.text('Error fetching aliases', 500);
+    }
+});
+
+// Get a specific alias
+app.get('/aliases/:code', sValidator("header", userHeaderSchema), async (c) => {
+    try {
+        const code = c.req.param('code');
+        const user_id = c.req.header("x-user-id")!;
+        const alias = await getAliasByCode(code);
+        
+        if (!alias || alias.user_id !== user_id) {
+            return c.json({ error: 'Alias not found' }, 404);
+        }
+        
+        return c.json(alias);
+    } catch (error) {
+        return c.text('Error fetching alias', 500);
+    }
+});
+
+// Create an alias
+app.post('/aliases', sValidator("json", createSchema), sValidator("header", userHeaderSchema), async (c) => {
+    try {
+        const req = await c.req.json();
+        const user_id = c.req.header("x-user-id")!;
+
+        const result = await createAlias({
+            target: req.target,
+            user_id: user_id,
+            metadata: req.metadata,
+            expires_at: req.expires_at ? new Date(req.expires_at) : undefined,
+        });
+
+        return c.json(result, 201);
+    } catch (error: any) {
+        return c.json({ error: error.message || 'Error creating alias' }, 500);
+    }
+});
+
+// Update an alias
+app.patch('/aliases/:code', sValidator("json", updateSchema), sValidator("header", userHeaderSchema), async (c) => {
+    try {
+        const code = c.req.param('code');
+        const req = await c.req.json();
+        const user_id = c.req.header("x-user-id")!;
+
+        const updated = await updateAlias(code, user_id, {
+            target: req.target,
+            metadata: req.metadata,
+            expires_at: req.expires_at ? new Date(req.expires_at) : undefined,
+        });
+
+        if (!updated) {
+            return c.json({ error: 'Alias not found or not authorized' }, 404);
+        }
+
+        return c.json(updated);
+    } catch (error: any) {
+        return c.json({ error: error.message || 'Error updating alias' }, 500);
+    }
+});
+
+// Delete an alias
+app.delete('/aliases/:code', sValidator("header", userHeaderSchema), async (c) => {
+    try {
+        const code = c.req.param('code');
+        const user_id = c.req.header("x-user-id")!;
+
+        const deleted = await deleteAlias(code, user_id);
+
+        if (!deleted) {
+            return c.json({ error: 'Alias not found or not authorized' }, 404);
+        }
+
+        return c.json({ message: 'Alias deleted' });
+    } catch (error: any) {
+        return c.json({ error: error.message || 'Error deleting alias' }, 500);
     }
 });
 
