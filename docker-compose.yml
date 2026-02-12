@@ -50,9 +50,41 @@ services:
       - POSTGRES_DB=management_db
     volumes:
       - management-db-data:/var/lib/postgresql
+      - ./scripts/init-replication.sh:/docker-entrypoint-initdb.d/init-replication.sh
+    command: postgres -c wal_level=replica -c max_wal_senders=10 -c max_replication_slots=10 -c listen_addresses='*'
     restart: on-failure
     ports:
       - "5433:5432"
+    networks:
+      - intranet
+
+  management-db-replica:
+    image: postgres:18-alpine
+    user: root
+    environment:
+      - POSTGRES_PASSWORD=dummy_password
+    depends_on:
+      - management-db
+    volumes:
+      - management-db-replica-data:/var/lib/postgresql
+    restart: on-failure
+    ports:
+      - "5434:5432"
+    command: |
+      bash -c "
+      until pg_isready -h management-db -p 5432; do
+        echo 'Waiting for primary database...'
+        sleep 2
+      done
+      if [ ! -s \"/var/lib/postgresql/18/docker/PG_VERSION\" ]; then
+        echo 'Bootstrapping replica...'
+        mkdir -p /var/lib/postgresql/18/docker
+        chown -R postgres:postgres /var/lib/postgresql
+        rm -rf /var/lib/postgresql/18/docker/*
+        su postgres -c 'pg_basebackup -h management-db -U replicator -D /var/lib/postgresql/18/docker -S replica_slot -X stream -P -R'
+      fi
+      exec docker-entrypoint.sh postgres
+      "
     networks:
       - intranet
 
@@ -63,38 +95,10 @@ services:
     networks:
       - intranet
 
-  management:
-    build:
-      context: ./services/management
-    environment:
-      - PORT=8000
-      - MANAGEMENT_DATABASE_URL=postgres://management_admin:management_admin@management-db:5432/management_db
-    ports:
-      - "8000:8000"
-    depends_on:
-      - management-db
-    networks:
-      - intranet
-
-  redirect:
-    build:
-      context: ./services/redirect
-    environment:
-      - PORT=3001
-      - REDIS_URL=redis://redis:6379
-      - MANAGEMENT_SERVICE_URL=http://management:8000
-    ports:
-      - "3001:3001"
-    depends_on:
-      - redis
-    networks:
-      - intranet
-    
-    
-
 networks:
   intranet:
 
 volumes:
   kratos-sqlite-data:
   management-db-data:
+  management-db-replica-data:

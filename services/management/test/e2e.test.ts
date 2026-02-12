@@ -1,4 +1,76 @@
-import { expect, test, describe } from "bun:test";
+import { expect, test, describe, mock } from "bun:test";
+
+let mockAliases: any[] = [];
+
+mock.module("../src/db/index", () => {
+  return {
+    default: {
+      insert: () => ({
+        values: (data: any) => ({
+          returning: () => {
+            const newAlias = { ...data, created_at: new Date() };
+            mockAliases.push(newAlias);
+            return [newAlias];
+          }
+        })
+      }),
+      select: () => ({
+        from: () => ({
+          where: (condition: any) => {
+            return {
+              limit: () => {
+                const code = JSON.stringify(condition).match(/"code":"(.*?)"/)?.[1];
+                const alias = mockAliases.find(a => a.code === code);
+                return alias ? [alias] : [];
+              },
+              then: (callback: any) => {
+                // For select().from().where() which returns array
+                const userId = JSON.stringify(condition).match(/"user_id":"(.*?)"/)?.[1];
+                if (userId) {
+                   return Promise.resolve(mockAliases.filter(a => a.user_id === userId));
+                }
+                return Promise.resolve(mockAliases);
+              }
+            };
+          },
+          then: (callback: any) => {
+             return Promise.resolve(mockAliases);
+          }
+        })
+      }),
+      update: () => ({
+        set: (data: any) => ({
+          where: (condition: any) => ({
+            returning: () => {
+              const code = JSON.stringify(condition).match(/"code":"(.*?)"/)?.[1];
+              const index = mockAliases.findIndex(a => a.code === code);
+              if (index !== -1) {
+                mockAliases[index] = { ...mockAliases[index], ...data };
+                return [mockAliases[index]];
+              }
+              return [];
+            }
+          })
+        })
+      }),
+      delete: () => ({
+        where: (condition: any) => ({
+          returning: () => {
+            const code = JSON.stringify(condition).match(/"code":"(.*?)"/)?.[1];
+            const index = mockAliases.findIndex(a => a.code === code);
+            if (index !== -1) {
+              const deleted = mockAliases.splice(index, 1);
+              return deleted;
+            }
+            return [];
+          }
+        })
+      }),
+      execute: () => Promise.resolve([{ "1": 1 }])
+    }
+  };
+});
+
 import app from "../src/app";
 
 describe("Management Service E2E CRUD", () => {

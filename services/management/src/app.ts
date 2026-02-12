@@ -10,7 +10,6 @@ const app = new Hono();
 
 app.use(logger())
 
-// Validation Schemas
 const createSchema = object({
     target: string().url().required().max(2048),
     metadata: object().optional(),
@@ -24,7 +23,7 @@ const updateSchema = object({
 });
 
 const userHeaderSchema = object({
-    "x-user-id": string().required() // Relaxed from UUID if needed, but keeping it required
+    "x-user-id": string().required()
 });
 
 app.get('/health', async (c) => {
@@ -36,7 +35,6 @@ app.get('/health', async (c) => {
     }
 });
 
-// List all aliases for a user
 app.get('/aliases', sValidator("header", userHeaderSchema), async (c) => {
     try {
         const user_id = c.req.header("x-user-id")!;
@@ -47,7 +45,6 @@ app.get('/aliases', sValidator("header", userHeaderSchema), async (c) => {
     }
 });
 
-// Get a specific alias
 app.get('/aliases/:code', sValidator("header", userHeaderSchema), async (c) => {
     try {
         const code = c.req.param('code');
@@ -64,7 +61,25 @@ app.get('/aliases/:code', sValidator("header", userHeaderSchema), async (c) => {
     }
 });
 
-// Create an alias
+app.get('/resolve/:code', async (c) => {
+    try {
+        const code = c.req.param('code');
+        const alias = await getAliasByCode(code);
+        
+        if (!alias) {
+            return c.json({ error: 'Alias not found' }, 404);
+        }
+
+        if (alias.expires_at && new Date(alias.expires_at) < new Date()) {
+            return c.json({ error: 'Alias has expired' }, 410); // 410 Gone
+        }
+        
+        return c.json({ target: alias.target });
+    } catch (error) {
+        return c.text('Error resolving alias', 500);
+    }
+});
+
 app.post('/aliases', sValidator("json", createSchema), sValidator("header", userHeaderSchema), async (c) => {
     try {
         const req = await c.req.json();
