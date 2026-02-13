@@ -1,8 +1,14 @@
 import { Kafka, Partitioners } from 'kafkajs';
 
+const brokers = process.env.KAFKA_BROKERS ? process.env.KAFKA_BROKERS.split(',') : ['localhost:9094'];
+const topic = process.env.KAFKA_TOPIC || 'analytics-event';
+
 const kafka = new Kafka({
   clientId: 'redirect-service',
-  brokers: ['localhost:9094'],
+  brokers,
+  connectionTimeout: 10000,
+  requestTimeout: 60000,
+  enforceRequestTimeout: false,
 });
 
 const producer = kafka.producer({
@@ -16,7 +22,7 @@ const producer = kafka.producer({
 
 export const connectProducer = async () => {
   await producer.connect();
-  console.log('Kafka Producer connected');
+  console.log(`Kafka Producer connected to ${brokers}`);
 };
 
 export const sendAnalyticsEvent = async (event: {
@@ -26,7 +32,7 @@ export const sendAnalyticsEvent = async (event: {
 }) => {
   // Fire and forget
   producer.send({
-    topic: 'analytics-event',
+    topic,
     messages: [
       { value: JSON.stringify(event) },
     ],

@@ -4,6 +4,7 @@ import pool from './db/index.js';
 import { sValidator } from "@hono/standard-validator";
 import { object, string } from "yup";
 import { sendAnalyticsEvent } from './kafka.js';
+import logger from './logger.js';
 
 export const app = new Hono();
 
@@ -17,7 +18,7 @@ app.get('/health', async (c) => {
     await pool.query('SELECT 1');
     return c.json({ status: 'ok', database: 'connected' });
   } catch (error) {
-    console.error('Health check failed:', error);
+    logger.error({ error }, 'Health check failed');
     return c.json({ status: 'error', database: 'disconnected' }, 500);
   }
 });
@@ -33,11 +34,11 @@ app.get('/:code', sValidator("param", codeSchema), async (c) => {
   try {
     const cachedTarget = await redis.get(`alias:${code}`);
     if (cachedTarget) {
-      console.log(`Cache hit for ${code}: ${cachedTarget}`);
+      logger.info({ code, target: cachedTarget }, 'Cache hit');
       return c.redirect(cachedTarget);
     }
 
-    console.log(`Cache miss for ${code}, checking read-only replica...`);
+    logger.info({ code }, 'Cache miss, checking DB...');
     const { rows } = await pool.query(
       'SELECT target, expires_at FROM public.alias WHERE code = $1 LIMIT 1',
       [code]
@@ -47,18 +48,18 @@ app.get('/:code', sValidator("param", codeSchema), async (c) => {
 
     if (result) {
       if (result.expires_at && new Date(result.expires_at) < new Date()) {
-        console.log(`Alias ${code} has expired`);
+        logger.info({ code }, 'Alias has expired');
         return c.json({ error: 'Not found' }, 404);
       }
 
-      await redis.set(`alias:${code}`, result.target, 'EX', 3600);
+      const ttl = process.env.REDIS_TTL ? parseInt(process.env.REDIS_TTL) : 3600;
+      await redis.set(`alias:${code}`, result.target, 'EX', ttl);
       return c.redirect(result.target);
     }
 
-    // 4. Not found
     return c.json({ error: 'Not found' }, 404);
   } catch (error) {
-    console.error('Redirection error:', error);
+    logger.error({ error, code }, 'Redirection error');
     return c.json({ error: 'Internal Server Error' }, 500);
   }
 });

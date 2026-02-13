@@ -13,20 +13,29 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/go-playground/validator/v10"
 	"github.com/wintkhantlin/url2short-analytics/internal/api"
+	"github.com/wintkhantlin/url2short-analytics/internal/config"
 	"github.com/wintkhantlin/url2short-analytics/internal/db"
 	"github.com/wintkhantlin/url2short-analytics/internal/kafka"
 	"github.com/wintkhantlin/url2short-analytics/internal/models"
 )
 
 func TestAnalyticsE2E(t *testing.T) {
+	cfg := config.Load()
+	cfg.APIPort = "8081" // Use a different port for tests
+
 	// 1. Connect to ClickHouse
-	conn, err := db.Connect()
+	conn, err := db.Connect(cfg)
 	require.NoError(t, err)
 
-	// Start API and Consumer for the test
-	go api.Start(conn, ":8081")
 	validate := validator.New()
-	go kafka.StartConsumer(conn, validate)
+
+	// 2. Start API in background
+	go api.Start(conn, cfg)
+
+	// 3. Start Kafka Consumer in background
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go kafka.StartConsumer(ctx, conn, validate, cfg)
 
 	// Wait a bit for API to start
 	time.Sleep(2 * time.Second)
