@@ -1,0 +1,126 @@
+[
+  {
+    "id": "management-api",
+    "upstream": {
+      "url": "http://management:8001"
+    },
+    "match": {
+      "url": "http://localhost:4455/api/management/<**>",
+      "methods": ["GET", "POST", "PUT", "DELETE", "PATCH"]
+    },
+    "authenticators": [
+      {
+        "handler": "cookie_session"
+      }
+    ],
+    "authorizers": [
+      {
+        "handler": "allow"
+      }
+    ],
+    "mutators": [
+      {
+        "handler": "header"
+      }
+    ],
+    "rewrite": [
+      {
+        "reg_exp": "/api/management/(.*)",
+        "replace": "/$1"
+      }
+    ]
+  },
+  {
+    "id": "analytics-api",
+    "upstream": {
+      "url": "http://analytics:8080"
+    },
+    "match": {
+      "url": "http://localhost:4455/api/analytics/<**>",
+      "methods": ["GET"]
+    },
+    "authenticators": [
+      {
+        "handler": "cookie_session"
+      }
+    ],
+    "authorizers": [
+      {
+        "handler": "allow"
+      }
+    ],
+    "mutators": [
+      {
+        "handler": "header"
+      }
+    ],
+    "rewrite": [
+      {
+        "reg_exp": "/api/analytics/(.*)",
+        "replace": "/$1"
+      }
+    ]
+  },
+  {
+    "id": "redirect-service",
+    "upstream": {
+      "url": "http://redirect:3001"
+    },
+    "match": {
+      "url": "http://localhost:4455/r/<**>",
+      "methods": ["GET"]
+    },
+    "authenticators": [
+      {
+        "handler": "anonymous"
+      }
+    ],
+    "authorizers": [
+      {
+        "handler": "allow"
+      }
+    ],
+    "mutators": [
+      {
+        "handler": "noop"
+      }
+    ],
+    "rewrite": [
+      {
+        "reg_exp": "/r/(.*)",
+        "replace": "/$1"
+      }
+    ]
+  },
+  {
+    "id": "kratos-public",
+    "upstream": {
+      "url": "http://kratos:4433"
+    },
+    "match": {
+      "url": "http://localhost:4455/auth/<**>",
+      "methods": ["GET", "POST", "PUT", "DELETE", "PATCH"]
+    },
+    "authenticators": [
+      {
+        "handler": "noop"
+      }
+    ],
+    "authorizers": [
+      {
+        "handler": "allow"
+      }
+    ],
+    "mutators": [
+      {
+        "handler": "noop"
+      }
+    ],
+    "rewrite": [
+      {
+        "reg_exp": "/auth/(.*)",
+        "replace": "/$1"
+      }
+    ]
+  }
+]
