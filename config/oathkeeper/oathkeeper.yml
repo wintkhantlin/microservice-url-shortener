@@ -1,0 +1,43 @@
+serve:
+  proxy:
+    port: 4455 # Port for incoming requests
+  api:
+    port: 4456 # Port for management API
+
+errors:
+  fallback:
+    - json
+
+mutators:
+  header:
+    enabled: true
+    config:
+      headers:
+        X-User-ID: '{{ print .Subject }}'
+  noop:
+    enabled: true
+
+authorizers:
+  allow:
+    enabled: true
+  deny:
+    enabled: true
+
+authenticators:
+  noop:
+    enabled: true
+  anonymous:
+    enabled: true
+    config:
+      subject: guest
+  cookie_session:
+    enabled: true
+    config:
+      check_session_url: http://kratos:4433/sessions/whoami
+      preserve_path: true
+      extra_from: "@this"
+      subject_from: "identity.id"
+
+log:
+  level: debug
+  format: json
