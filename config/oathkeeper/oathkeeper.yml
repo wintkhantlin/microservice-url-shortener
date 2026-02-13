@@ -41,3 +41,8 @@ authenticators:
 log:
   level: debug
   format: json
+
+access_rules:
+  matching_strategy: glob
+  repositories:
+    - file:///etc/config/oathkeeper/rules.json

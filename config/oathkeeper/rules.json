@@ -13,20 +13,14 @@
         "handler": "cookie_session"
       }
     ],
-    "authorizers": [
-      {
-        "handler": "allow"
-      }
-    ],
+    "authorizer": {
+      "handler": "allow",
+      "config": {}
+    },
     "mutators": [
       {
-        "handler": "header"
-      }
-    ],
-    "rewrite": [
-      {
-        "reg_exp": "/api/management/(.*)",
-        "replace": "/$1"
+        "handler": "header",
+        "config": {}
       }
     ]
   },
@@ -44,51 +38,14 @@
         "handler": "cookie_session"
       }
     ],
-    "authorizers": [
-      {
-        "handler": "allow"
-      }
-    ],
+    "authorizer": {
+      "handler": "allow",
+      "config": {}
+    },
     "mutators": [
       {
-        "handler": "header"
-      }
-    ],
-    "rewrite": [
-      {
-        "reg_exp": "/api/analytics/(.*)",
-        "replace": "/$1"
-      }
-    ]
-  },
-  {
-    "id": "redirect-service",
-    "upstream": {
-      "url": "http://redirect:3001"
-    },
-    "match": {
-      "url": "http://localhost:4455/r/<**>",
-      "methods": ["GET"]
-    },
-    "authenticators": [
-      {
-        "handler": "anonymous"
-      }
-    ],
-    "authorizers": [
-      {
-        "handler": "allow"
-      }
-    ],
-    "mutators": [
-      {
-        "handler": "noop"
-      }
-    ],
-    "rewrite": [
-      {
-        "reg_exp": "/r/(.*)",
-        "replace": "/$1"
+        "handler": "header",
+        "config": {}
       }
     ]
   },
@@ -106,14 +63,14 @@
         "handler": "noop"
       }
     ],
-    "authorizers": [
-      {
-        "handler": "allow"
-      }
-    ],
+    "authorizer": {
+      "handler": "allow",
+      "config": {}
+    },
     "mutators": [
       {
-        "handler": "noop"
+        "handler": "noop",
+        "config": {}
       }
     ],
     "rewrite": [
