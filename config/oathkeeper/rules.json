@@ -22,6 +22,12 @@
         "handler": "header",
         "config": {}
       }
+    ],
+    "rewrite": [
+      {
+        "reg_exp": "/api/management/(.*)",
+        "replace": "/$1"
+      }
     ]
   },
   {
@@ -46,6 +52,12 @@
       {
         "handler": "header",
         "config": {}
+      }
+    ],
+    "rewrite": [
+      {
+        "reg_exp": "/api/analytics/(.*)",
+        "replace": "/$1"
       }
     ]
   },
