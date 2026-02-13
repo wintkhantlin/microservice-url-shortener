@@ -1,0 +1,43 @@
+name: Build Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-analytics:
+    name: Build Analytics Service (Go)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: services/analytics/go.sum
+
+      - name: Build
+        working-directory: services/analytics
+        run: go build -v ./...
+
+  build-redirect:
+    name: Build Redirect Service (Bun)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: services/redirect
+        run: bun install --frozen-lockfile
+
+      - name: Build Check
+        working-directory: services/redirect
+        run: bun build ./src/index.ts --outdir ./dist
