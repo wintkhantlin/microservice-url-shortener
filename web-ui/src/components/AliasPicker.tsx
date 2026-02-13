@@ -8,7 +8,8 @@ import {
     DropdownMenuShortcut,
     DropdownMenuTrigger
 } from "./ui/dropdown-menu";
-import { ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown, PlusIcon } from "lucide-react";
+import { Separator } from "./ui/separator";
 
 export default function AliasPicker() {
     const aliases = [
@@ -40,6 +41,13 @@ export default function AliasPicker() {
             </DropdownMenuTrigger>
 
             <DropdownMenuContent side="right" align="end" sideOffset={4} className="mt-2 w-72">
+                <DropdownMenuGroup>
+                    <DropdownMenuItem className="h-10 mb-1">
+                        <PlusIcon />
+                        Create URL Alias
+                    </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <Separator />
                 <DropdownMenuGroup>
                     <DropdownMenuLabel className="text-muted-foreground text-xs">
                         URL Aliases
