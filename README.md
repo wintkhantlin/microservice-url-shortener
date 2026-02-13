@@ -4,7 +4,7 @@ This is URL2Short, a high-performance, scalable URL shortener built to handle hi
 
 ## What is this?
 
-It is a system that takes long URLs and turns them into short, shareable links (like `http://localhost:4455/r/xyz`). But it does more than just shorten links:
+It is a system that takes long URLs and turns them into short, shareable links. But it does more than just shorten links:
 *   **Fast:** We use Redis caching to make sure redirects happen instantly.
 *   **Smart:** It tracks who clicks your links (browser, country, OS) without slowing down the user.
 *   **Scalable:** Built with microservices, so you can scale the parts that need it most.
