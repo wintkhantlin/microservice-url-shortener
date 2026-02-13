@@ -5,22 +5,32 @@ import (
 	"time"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
+	"github.com/wintkhantlin/url2short-analytics/internal/config"
 	"github.com/wintkhantlin/url2short-analytics/internal/models"
 )
 
-func Connect() (clickhouse.Conn, error) {
-	return clickhouse.Open(&clickhouse.Options{
-		Addr: []string{"127.0.0.1:9000"},
+func Connect(cfg *config.Config) (clickhouse.Conn, error) {
+	conn, err := clickhouse.Open(&clickhouse.Options{
+		Addr: []string{cfg.ClickHouseAddr},
 		Auth: clickhouse.Auth{
-			Database: "default",
-			Username: "default",
-			Password: "default",
+			Database: cfg.ClickHouseDB,
+			Username: cfg.ClickHouseUser,
+			Password: cfg.ClickHousePassword,
 		},
 		Settings: clickhouse.Settings{
 			"max_execution_time": 60,
 		},
 		DialTimeout: 5 * time.Second,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	if err := conn.Ping(context.Background()); err != nil {
+		return nil, err
+	}
+
+	return conn, nil
 }
 
 func Insert(ctx context.Context, conn clickhouse.Conn, event models.AnalyticsEvent) error {
