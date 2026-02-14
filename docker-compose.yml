@@ -27,21 +27,6 @@ services:
     networks:
       - intranet
 
-  kratos-selfservice-ui-node:
-    image: oryd/kratos-selfservice-ui-node:v1.2.0
-    environment:
-      - KRATOS_PUBLIC_URL=http://kratos:4433
-      - KRATOS_ADMIN_URL=http://kratos:4434
-      - KRATOS_BROWSER_URL=http://localhost:4433
-      - PORT=3000
-      - COOKIE_SECRET=changeme-long-secret-12345
-      - CSRF_COOKIE_NAME=ory_kratos_csrf
-      - CSRF_COOKIE_SECRET=changeme-another-secret-67890
-    ports:
-      - "3002:3000"
-    networks:
-      - intranet
-
   management-db:
     image: postgres:18-alpine
     environment:
@@ -182,8 +167,9 @@ services:
     depends_on:
       - clickhouse
       - broker
-    ports:
-      - "8080:8080"
+    deploy:
+      mode: replicated
+      replicas: 2
     networks:
       - intranet
 
