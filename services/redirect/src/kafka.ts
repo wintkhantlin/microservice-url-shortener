@@ -29,6 +29,7 @@ export const sendAnalyticsEvent = async (event: {
   code: string;
   ip: string;
   userAgent: string;
+  referer?: string;
 }) => {
   // Fire and forget
   producer.send({

@@ -29,8 +29,9 @@ app.get('/:code', sValidator("param", codeSchema), async (c) => {
   const code = c.req.param('code');
   const ip = c.req.header('x-forwarded-for') || '127.0.0.1';
   const userAgent = c.req.header('user-agent') || 'unknown';
+  const referer = c.req.header('referer') || '';
 
-  sendAnalyticsEvent({ code, ip, userAgent });
+  sendAnalyticsEvent({ code, ip, userAgent, referer });
 
   try {
     const cachedTarget = await redis.get(`alias:${code}`);
