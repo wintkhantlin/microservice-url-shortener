@@ -32,7 +32,7 @@ FieldDescription.displayName = "FieldDescription"
 
 const FieldError = React.forwardRef<
   HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement> & { errors?: any[] }
+  React.HTMLAttributes<HTMLParagraphElement> & { errors?: unknown[] }
 >(({ className, errors, ...props }, ref) => {
   if (!errors?.length) return null
   return (
