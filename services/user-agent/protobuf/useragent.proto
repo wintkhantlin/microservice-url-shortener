@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package useragent;
+option go_package = "github.com/wintkhantlin/url2short-useragent/gen";
+
+service UserAgentService {
+  rpc Parse(UserAgentRequest) returns (UserAgentResponse);
+}
+
+message UserAgentRequest {
+  string user_agent = 1;
+}
+
+message UserAgentResponse {
+    string browser = 1;
+    string os = 2;
+    string device = 3;
+}
