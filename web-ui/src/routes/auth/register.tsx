@@ -1,7 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { z } from 'zod'
 import { kratos } from '@/lib/kratos'
-import { type RegistrationFlow } from '@ory/client'
 
 const registerSearchSchema = z.object({
     flow: z.string().optional(),
