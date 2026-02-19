@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query";
 
 export interface Alias {
     code: string;
@@ -10,19 +10,21 @@ export interface Alias {
     metadata?: Record<string, unknown>;
 }
 
-export function useAliases() {
-    return useQuery({
-        queryKey: ["aliases"],
-        queryFn: async (): Promise<Alias[]> => {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:4455/api"}/management/aliases`, {
-                credentials: "include"
-            });
-            if (!res.ok) {
-                throw new Error("Failed to fetch aliases");
-            }
-            return res.json();
+export const aliasesQueryOptions = () => queryOptions({
+    queryKey: ["aliases"],
+    queryFn: async (): Promise<Alias[]> => {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:4455/api"}/management/aliases`, {
+            credentials: "include"
+        });
+        if (!res.ok) {
+            throw new Error("Failed to fetch aliases");
         }
-    });
+        return res.json();
+    }
+});
+
+export function useAliases() {
+    return useQuery(aliasesQueryOptions());
 }
 
 export function useCreateAlias() {

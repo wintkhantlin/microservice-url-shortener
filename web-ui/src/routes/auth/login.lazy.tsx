@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
+import { Route as LoginRoute } from './login'
 
 export const Route = createLazyFileRoute('/auth/login')({
     component: Login,
@@ -20,39 +21,9 @@ const loginFormSchema = z.object({
 
 function Login() {
     const navigate = useNavigate()
-    const search = useSearch({ from: '/auth/login' }) as { flow?: string }
-    const [flow, setFlow] = useState<LoginFlow | null>(null)
-    const [isReady, setIsReady] = useState(false)
-
-    useEffect(() => {
-        async function initFlow() {
-            if (search.flow) {
-                try {
-                    const { data } = await kratos.getLoginFlow({ id: search.flow })
-                    setFlow(data)
-                    setIsReady(true)
-                } catch {
-                    createFlow()
-                }
-            } else {
-                createFlow()
-            }
-        }
-
-        async function createFlow() {
-            try {
-                const { data } = await kratos.createBrowserLoginFlow()
-                setFlow(data)
-                setIsReady(true)
-            } catch (err: unknown) {
-                if ((err as any).response?.status === 400 && (err as any).response?.data?.error?.id === 'session_already_available') {
-                    navigate({ to: '/' })
-                }
-            }
-        }
-
-        initFlow()
-    }, [search.flow, navigate])
+    const data = LoginRoute.useLoaderData() as { flow?: LoginFlow }
+    const initialFlow = data?.flow
+    const [flow, setFlow] = useState<LoginFlow | null>(initialFlow || null)
 
     const form = useForm({
         defaultValues: {
@@ -92,7 +63,7 @@ function Login() {
         },
     })
 
-    if (!isReady || !flow) {
+    if (!flow) {
         return <div className="flex items-center justify-center min-h-screen">Loading...</div>
     }
 

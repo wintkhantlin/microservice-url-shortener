@@ -11,7 +11,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "./ui/dialog";
-import { Loader2 } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 
 interface CreateAliasDialogProps {
     open: boolean;

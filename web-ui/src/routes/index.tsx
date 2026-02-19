@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useAliases } from '@/hooks/useAliases'
 import { useEffect } from 'react'
 import { useSession } from '@/hooks/useSession'
-import { Loader2 } from 'lucide-react'
+import Loader2 from 'lucide-react/dist/esm/icons/loader-2'
 import { DashboardLayout } from '@/components/DashboardLayout'
 
 export const Route = createFileRoute('/')({
