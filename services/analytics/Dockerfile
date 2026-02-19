@@ -15,7 +15,7 @@ COPY services/analytics/go.mod services/analytics/go.sum ./
 RUN go mod download
 
 # Copy the rest of the source code
-COPY . .
+COPY services/analytics/ .
 
 RUN go build -o analytics main.go
 
