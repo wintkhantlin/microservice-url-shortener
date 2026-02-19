@@ -1,6 +1,5 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { useForm } from '@tanstack/react-form'
-import { zodValidator } from '@tanstack/zod-form-adapter'
+import { revalidateLogic, useForm } from '@tanstack/react-form'
 import { z } from 'zod'
 import { useState } from 'react'
 import { type RegistrationFlow, type UpdateRegistrationFlowBody, type UiNodeInputAttributes, type UiNode } from '@ory/client'
@@ -9,7 +8,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
-import { useNavigate } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
 import { Route as RegisterRoute } from './register'
 
@@ -24,7 +22,6 @@ const registerSchema = z.object({
 })
 
 function Register() {
-  const navigate = useNavigate()
   const data = RegisterRoute.useLoaderData() as { flow?: RegistrationFlow }
   const initialFlow = data?.flow
   const [flow, setFlow] = useState<RegistrationFlow | null>(initialFlow || null)
@@ -35,10 +32,9 @@ function Register() {
       email: '',
       password: '',
     },
-    // @ts-expect-error: validatorAdapter type mismatch with zodValidator in current version
-    validatorAdapter: zodValidator(),
+    validationLogic: revalidateLogic(),
     validators: {
-      onChange: registerSchema,
+      onDynamic: registerSchema,
     },
     onSubmit: async ({ value }) => {
       if (!flow) return
