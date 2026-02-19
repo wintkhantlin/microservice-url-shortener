@@ -1,6 +1,9 @@
 import { Kafka, Partitioners } from 'kafkajs';
 
-const brokers = process.env.KAFKA_BROKERS ? process.env.KAFKA_BROKERS.split(',') : ['broker:9092'];
+if (!process.env.KAFKA_BROKERS) {
+  throw new Error('KAFKA_BROKERS environment variable is not defined');
+}
+const brokers = process.env.KAFKA_BROKERS.split(',');
 const topic = process.env.KAFKA_TOPIC || 'analytics-event';
 
 const kafka = new Kafka({
