@@ -2,15 +2,16 @@ import { createLazyFileRoute } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { zodValidator } from '@tanstack/zod-form-adapter'
 import { z } from 'zod'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { type RegistrationFlow, type UpdateRegistrationFlowBody, type UiNodeInputAttributes, type UiNode } from '@ory/client'
 import { kratos } from '@/lib/kratos'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
-import { useNavigate, useSearch } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
+import { Route as RegisterRoute } from './register'
 
 export const Route = createLazyFileRoute('/auth/register')({
   component: Register,
@@ -24,39 +25,9 @@ const registerSchema = z.object({
 
 function Register() {
   const navigate = useNavigate()
-  const search = useSearch({ from: '/auth/register' }) as { flow?: string }
-  const [flow, setFlow] = useState<RegistrationFlow | null>(null)
-  const [isReady, setIsReady] = useState(false)
-
-  useEffect(() => {
-    async function initFlow() {
-      if (search.flow) {
-        try {
-          const { data } = await kratos.getRegistrationFlow({ id: search.flow })
-          setFlow(data)
-          setIsReady(true)
-        } catch {
-          createFlow()
-        }
-      } else {
-        createFlow()
-      }
-    }
-
-    async function createFlow() {
-      try {
-        const { data } = await kratos.createBrowserRegistrationFlow()
-        setFlow(data)
-        setIsReady(true)
-      } catch (err: unknown) {
-        if ((err as any).response?.status === 400 && (err as any).response?.data?.error?.id === 'session_already_available') {
-             navigate({ to: '/' })
-         }
-      }
-    }
-
-    initFlow()
-  }, [search.flow, navigate])
+  const data = RegisterRoute.useLoaderData() as { flow?: RegistrationFlow }
+  const initialFlow = data?.flow
+  const [flow, setFlow] = useState<RegistrationFlow | null>(initialFlow || null)
 
   const form = useForm({
     defaultValues: {
@@ -101,8 +72,8 @@ function Register() {
     },
   })
 
-  if (!isReady || !flow) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>
+  if (!flow) {
+      return <div className="flex items-center justify-center min-h-screen">Loading...</div>
   }
 
   return (

@@ -1,6 +1,7 @@
-import { 
-    ChartColumn, Settings, LogOut, ChevronUp 
-} from 'lucide-react'
+import ChartColumn from 'lucide-react/dist/esm/icons/chart-column'
+import List from 'lucide-react/dist/esm/icons/list'
+import LogOut from 'lucide-react/dist/esm/icons/log-out'
+import ChevronUp from 'lucide-react/dist/esm/icons/chevron-up'
 import { Link, useLocation } from '@tanstack/react-router'
 import { 
     Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, 
@@ -57,7 +58,7 @@ export function AppSidebar({ aliases, selectedAliasId }: { aliases: Alias[], sel
                                 className="h-9 px-3"
                             >
                                 <Link to="/aliases">
-                                    <Settings className="h-4 w-4" />
+                                    <List className="h-4 w-4" />
                                     <span className="text-sm">My Aliases</span>
                                 </Link>
                             </SidebarMenuButton>

@@ -7,7 +7,8 @@ import {
     DropdownMenuLabel,
     DropdownMenuTrigger
 } from "./ui/dropdown-menu";
-import { ChevronsUpDown, PlusIcon } from "lucide-react";
+import ChevronsUpDown from "lucide-react/dist/esm/icons/chevrons-up-down";
+import PlusIcon from "lucide-react/dist/esm/icons/plus";
 import { Separator } from "./ui/separator";
 import { type Alias } from "@/hooks/useAliases";
 import CreateAliasDialog from "./CreateAliasDialog";
