@@ -8,7 +8,7 @@ const analyticsSearchSchema = z.object({
     end: z.string().optional(),
 })
 
-export interface AnalyticsResponse {
+interface AnalyticsResponse {
     total_clicks: number;
     timeline: { time: string; count: number }[];
     browsers: { name: string; count: number }[];

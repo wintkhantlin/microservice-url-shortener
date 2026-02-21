@@ -51,6 +51,7 @@ export default function AliasPicker({ aliases, selectedAliasId }: AliasPickerPro
                                     <img
                                         src={`https://www.google.com/s2/favicons?domain=${currentDomain}&sz=64`}
                                         className="w-4 h-4 rounded-sm"
+                                        alt={currentDomain ? `Favicon for ${currentDomain}` : "Site favicon"}
                                         onError={(e) => {
                                             (e.target as HTMLImageElement).style.display = 'none';
                                         }}
@@ -92,6 +93,7 @@ export default function AliasPicker({ aliases, selectedAliasId }: AliasPickerPro
                                     <img
                                         src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
                                         className="w-4 h-4 rounded-sm"
+                                        alt={domain ? `Favicon for ${domain}` : "Site favicon"}
                                         onError={(e) => {
                                             (e.target as HTMLImageElement).style.display = 'none';
                                         }}

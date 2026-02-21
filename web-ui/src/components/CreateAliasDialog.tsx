@@ -67,7 +67,6 @@ export default function CreateAliasDialog({ open, onOpenChange }: CreateAliasDia
                             onChange={(e) => setTarget(e.target.value)}
                             placeholder="https://example.com"
                             className="col-span-3"
-                            autoFocus
                         />
                     </div>
                     {error && (
