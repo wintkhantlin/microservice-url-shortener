@@ -1,7 +1,6 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { useMemo, lazy, Suspense, useState, type ReactNode } from 'react'
 import MousePointer2 from 'lucide-react/dist/esm/icons/mouse-pointer-2'
-import Users from 'lucide-react/dist/esm/icons/users'
 import Globe2 from 'lucide-react/dist/esm/icons/globe-2'
 import Monitor from 'lucide-react/dist/esm/icons/monitor'
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2'
@@ -66,11 +65,28 @@ function transformData(data: { name: string; count: number }[] | undefined): Dat
 function transformDeviceData(data: { name: string; count: number }[] | undefined) {
   if (!data) return []
 
-  return data.map((item, index) => ({
-    device: item.name,
-    visitors: item.count,
-    fill: COLORS[index % COLORS.length],
-  }))
+  let mobile = 0
+  let desktop = 0
+
+  for (const item of data) {
+    const name = item.name.toLowerCase()
+    const count = item.count ?? 0
+
+    // Common buckets we expect from UA parsing: mobile/desktop/tablet/other.
+    if (name.includes('mobile') || name.includes('phone')) {
+      mobile += count
+      continue
+    }
+    if (name.includes('desktop') || name.includes('computer') || name === 'pc') {
+      desktop += count
+      continue
+    }
+  }
+
+  return [
+    { device: 'Mobile', visitors: mobile, fill: COLORS[0] },
+    { device: 'Desktop', visitors: desktop, fill: COLORS[1] },
+  ]
 }
 
 function AnalyticsControls() {
@@ -298,9 +314,10 @@ function DashboardRoute() {
   const deviceData = useMemo(() => transformDeviceData(analytics?.devices), [analytics])
   const referrerData = useMemo(() => transformData(analytics?.referrers), [analytics])
 
-  const trackedVisitors = analytics?.devices?.reduce((acc, curr) => acc + curr.count, 0) ?? 0
   const topReferrer = analytics?.referrers?.[0]?.name || '-'
-  const topDevice = analytics?.devices?.[0]?.name || '-'
+  const topDevice = deviceData[0] && deviceData[1]
+    ? (deviceData[0].visitors >= deviceData[1].visitors ? deviceData[0].device : deviceData[1].device)
+    : '-'
   const createdDate = alias ? new Date(alias.created_at).toLocaleDateString() : '-'
 
   if (loaderError) {
@@ -358,9 +375,8 @@ function DashboardRoute() {
           <TrafficChart data={timelineData} interval={interval} />
         </Suspense>
 
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <MetricCard title="Total Clicks" value={analytics?.total_clicks?.toLocaleString() || 0} icon={<MousePointer2 size={18} />} />
-          <MetricCard title="Visitors" value={trackedVisitors.toLocaleString()} icon={<Users size={18} />} />
           <MetricCard title="Top Referrer" value={topReferrer} icon={<Globe2 size={18} />} />
           <MetricCard title="Top Device" value={topDevice} icon={<Monitor size={18} />} />
         </div>
