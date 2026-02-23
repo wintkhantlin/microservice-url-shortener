@@ -27,10 +27,10 @@ Want to take it for a spin? It is easy.
 For a detailed guide on running the application locally or via Docker, please see [Running Instructions](docs/RUNNING.md).
 
 ### You Will Need
-*   Docker & Docker Compose (to run everything)
-*   Bun (if you want to hack on the TS code)
-*   Go (if you want to hack on the Analytics code)
-*   Python (if you want to hack on the Security code)
+*   Docker & Docker Compose
+*   Bun
+*   Go
+*   Python
 
 ### Let's Run It!
 
